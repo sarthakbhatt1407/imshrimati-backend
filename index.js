@@ -1,5 +1,7 @@
 const express = require("express");
 const app = express();
+
+const fileUpload = require("./middleware/fileUpload");
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -18,6 +20,17 @@ const userRoute = require("./routes/user");
 dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.post(
+  "/upload",
+  fileUpload.array("image", 5),
+  (req, res) => {
+    res.send(req.files);
+  },
+  (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+  }
+);
 
 app.use(userRoute);
 mongoose
