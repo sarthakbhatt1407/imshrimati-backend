@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 
-const fileUpload = require("./middleware/fileUpload");
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -14,25 +13,16 @@ app.use((req, res, next) => {
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const PORT = process.env.PORT || 5000;
-
+app.use("/images", express.static("images"));
 const userRoute = require("./routes/user");
+const itemRoute = require("./routes/item");
 
 dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.post(
-  "/upload",
-  fileUpload.array("image", 5),
-  (req, res) => {
-    res.send(req.files);
-  },
-  (error, req, res, next) => {
-    res.status(400).send({ error: error.message });
-  }
-);
-
-app.use(userRoute);
+app.use("/user", userRoute);
+app.use("/item", itemRoute);
 mongoose
   .connect(process.env.DATABASE_URL)
   .then(() => {
