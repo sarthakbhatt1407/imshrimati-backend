@@ -1,14 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const itemController = require("../controller/itemController");
+const productController = require("../controller/productController");
 const fileUpload = require("../middleware/fileUpload");
 
 router.post(
-  "/create-new-item",
+  "/create-new-product",
   fileUpload.array("image"),
-  itemController.createNewProduct
+  productController.createNewProduct
 );
-router.get("/all-items", itemController.getAllProducts);
-router.delete("/delete-item", itemController.deleteItemById);
+router.get("/all-items", productController.getAllProducts);
+router.get("/:id", productController.getProductById);
+router.delete("/delete-item", productController.deleteProductById);
+router.patch(
+  "/edit-item",
+  fileUpload.array("image"),
+  productController.editItemByItemId
+);
+router.patch("/reviews", productController.productReviewHandler);
 
 module.exports = router;

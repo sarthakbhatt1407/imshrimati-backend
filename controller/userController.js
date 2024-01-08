@@ -26,7 +26,6 @@ const validateEmail = (email) => {
 };
 const userRegistration = async (req, res, next) => {
   const { name, email, password, contactNum } = req.body;
-  //   console.log(req.body);
   const date = new Date();
   let day = date.getDate();
   let month = date.getMonth();
@@ -42,9 +41,10 @@ const userRegistration = async (req, res, next) => {
       password: hashedPass,
       contactNum,
       userSince: months[month] + " " + year,
-      oredrs: [],
+      address: [],
+      wishlist: [],
+      status: true,
     });
-    // console.log(createdUser);
     if (!validateEmail(email)) {
       return res.status(404).json({ message: "Invalid Email" });
     }
@@ -84,7 +84,6 @@ const userLogin = async (req, res, next) => {
         name: user.name,
         email: user.email,
         id: user.id,
-        image: user.image,
       },
       message: "Logged In",
       isloggedIn: true,
@@ -150,35 +149,8 @@ const getAllUsers = async (req, res, next) => {
   res.status(200).json(users);
 };
 
-const changeUserInfo = async (req, res, next) => {
-  const { name, image, userId } = req.body;
-
-  let user;
-  try {
-    user = await User.findById(userId);
-    if (!user) {
-      throw new Error();
-    }
-  } catch (error) {
-    return res.status(400).json({ message: "Unable to find user" });
-  }
-  const imgPath = user.image;
-  user.name = name;
-  user.image = req.file.path;
-  try {
-    await user.save();
-  } catch (error) {
-    fs.unlink(req.file.path, (err) => {});
-    return res.status(400).json({ message: "Unable to update" });
-  }
-
-  fs.unlink(imgPath, (err) => {});
-  return res.status(200).json({ message: "Information Updated" });
-};
-
 exports.userRegistration = userRegistration;
 exports.userLogin = userLogin;
 exports.emailVerifier = emailVerifier;
 exports.passwordReseter = passwordReseter;
 exports.getAllUsers = getAllUsers;
-exports.changeUserInfo = changeUserInfo;

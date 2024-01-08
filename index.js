@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/user", userRoute);
-app.use("/item", itemRoute);
+app.use("/product", itemRoute);
 mongoose
   .connect(process.env.DATABASE_URL)
   .then(() => {
