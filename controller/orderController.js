@@ -88,6 +88,8 @@ const createNewOrder = async (req, res) => {
     year: dateAndTime.date[0],
     replacementStatus: false,
     replacement: { size: "", color: "", reason: "" },
+    tracking: "",
+    status: "Pending",
   });
   //   return res.json(createdOrder);
   try {
@@ -119,5 +121,125 @@ const getOrderByUserId = async (req, res) => {
   });
 };
 
+const editOrderByOrderId = async (req, res) => {
+  const { orderId, size, color, reason } = req.body;
+  let order;
+  try {
+    order = await Order.findById(orderId);
+    if (!order) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "No order found" });
+  }
+  const obj = {
+    size,
+    color,
+    reason,
+  };
+  order.replacementStatus = true;
+  order.replacement = obj;
+  order.status = "Pending";
+  try {
+    await order.save();
+  } catch (error) {
+    return res.status(404).json({ message: "Something went wrong" });
+  }
+
+  return res.status(200).json({ message: "Order updated succesfully", order });
+};
+
+const getAllOrders = async (req, res) => {
+  let orders;
+  try {
+    orders = await Order.find({});
+
+    if (orders.length == 0) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "No orders found" });
+  }
+  return res.status(200).json({
+    orders: orders.map((order) => {
+      return order.toObject({ getters: true });
+    }),
+  });
+};
+
+const getTotalMonthlyPayment = async (req, res) => {
+  const { month, action, day, year } = req.body;
+  let totalSales = 0;
+  let orders;
+  if (action === "monthly") {
+    try {
+      orders = await Order.find({ month: month });
+
+      if (orders.length == 0) {
+        throw new Error();
+      }
+    } catch (error) {
+      return res.status(404).json({ message: "No orders found" });
+    }
+  }
+  if (action === "daily") {
+    try {
+      orders = await Order.find({ day: day });
+
+      if (orders.length == 0) {
+        throw new Error();
+      }
+    } catch (error) {
+      return res.status(404).json({ message: "No orders found" });
+    }
+  }
+  if (action === "yearly") {
+    try {
+      orders = await Order.find({ year: year });
+
+      if (orders.length == 0) {
+        throw new Error();
+      }
+    } catch (error) {
+      return res.status(404).json({ message: "No orders found" });
+    }
+  }
+  return res.status(200).json({
+    orders: orders.map((order) => {
+      totalSales += order.price * order.quantity;
+      return order.toObject({ getters: true });
+    }),
+    totalSales,
+  });
+};
+
+const trackingUpdater = async (req, res) => {
+  const { orderId, action, tracking } = req.body;
+  let order;
+  try {
+    order = await Order.findById(orderId);
+    if (!order) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "No order found" });
+  }
+  if (action === "replace") {
+    order.replacementStatus = false;
+  }
+  order.tracking = tracking;
+  order.status = "Completed";
+  try {
+    await order.save();
+  } catch (error) {
+    return res.status(404).json({ message: "Something went wrong" });
+  }
+  return res.status(201).json({ message: "order updated succesfully", order });
+};
+
 exports.createNewOrder = createNewOrder;
 exports.getOrderByUserId = getOrderByUserId;
+exports.editOrderByOrderId = editOrderByOrderId;
+exports.getAllOrders = getAllOrders;
+exports.getTotalMonthlyPayment = getTotalMonthlyPayment;
+exports.trackingUpdater = trackingUpdater;

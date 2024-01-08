@@ -16,6 +16,8 @@ const orderSchema = mongoose.Schema({
   gatewayCharges: { type: Number, required: true },
   replacementStatus: { type: Boolean },
   replacement: { type: Object },
+  tracking: { type: String },
+  status: { type: String, required: true },
 });
 
 module.exports = mongoose.model("Order", orderSchema);
