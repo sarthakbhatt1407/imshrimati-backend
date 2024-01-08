@@ -30,6 +30,12 @@ const userRegistration = async (req, res, next) => {
   let day = date.getDate();
   let month = date.getMonth();
   let year = date.getFullYear();
+  if (password.length < 8) {
+    return res.status(400).json({ message: "Password length is too short.." });
+  }
+  if (contactNum.length < 10) {
+    return res.status(400).json({ message: "Invalid Contact Number.." });
+  }
   const hashedPass = await bcrypt.hash(password, 12);
   let user = await User.findOne({ email: email });
   if (user && user.email === email) {
@@ -54,7 +60,9 @@ const userRegistration = async (req, res, next) => {
       console.log(err);
       return res.status(403).json({ message: "Unable to register user." });
     }
-    res.status(201).json({ message: "Sign up successful.." });
+    res.status(201).json({
+      message: "Sign up successful..",
+    });
   }
 };
 
@@ -71,7 +79,9 @@ const userLogin = async (req, res, next) => {
       throw new Error();
     }
   } catch (err) {
-    return res.status(404).json({ message: "Invalid Credentials" });
+    return res
+      .status(404)
+      .json({ message: "Email not found, Please Signup first" });
   }
 
   passIsValid = await bcrypt.compare(password, user.password);

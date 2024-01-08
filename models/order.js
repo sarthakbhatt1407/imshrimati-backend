@@ -15,7 +15,7 @@ const orderSchema = mongoose.Schema({
   shippingCharges: { type: Number, required: true },
   gatewayCharges: { type: Number, required: true },
   replacementStatus: { type: Boolean },
-  replacement: { type: Array },
+  replacement: { type: Object },
 });
 
 module.exports = mongoose.model("Order", orderSchema);
