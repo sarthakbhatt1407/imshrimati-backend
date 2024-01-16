@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const PORT = process.env.PORT || 5000;
 //  CORS
+app.use("/images", express.static("images"));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -20,9 +21,9 @@ app.use((req, res, next) => {
 const userRoute = require("./routes/user");
 const itemRoute = require("./routes/item");
 const orderRoute = require("./routes/order");
+const categoryRoute = require("./routes/category");
 
 // Routes Middleware
-app.use("/images", express.static("images"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/user", userRoute);
 app.use("/product", itemRoute);
 app.use("/order", orderRoute);
+app.use("/category", categoryRoute);
 
 // Database
 

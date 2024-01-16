@@ -18,6 +18,7 @@ const productSchema = mongoose.Schema({
   date: { type: String, required: true },
   time: { type: String, required: true },
   status: { type: Boolean, required: true },
+  color: { type: String, required: true },
 });
 
 module.exports = mongoose.model("Product", productSchema);

@@ -109,7 +109,9 @@ const createNewProduct = async (req, res, next) => {
       metaTitle,
       metaDesc,
       metaKeywords,
+      color,
     } = req.body;
+
     const createdProduct = new Product({
       title,
       desc,
@@ -127,6 +129,7 @@ const createNewProduct = async (req, res, next) => {
       time: time,
       status: true,
       images: imgPath,
+      color,
     });
     result = await createdProduct.save();
   } catch (err) {
