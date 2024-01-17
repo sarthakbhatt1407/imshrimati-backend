@@ -89,7 +89,7 @@ const userLogin = async (req, res, next) => {
     token = jwt.sign({ userId: user.id, userEmail: email }, "secret_key");
 
     user.password = "Keep Guessing";
-    res.json({
+    return res.status(201).json({
       user: {
         name: user.name,
         email: user.email,
@@ -97,7 +97,7 @@ const userLogin = async (req, res, next) => {
       },
       message: "Logged In",
       isloggedIn: true,
-      token: token,
+      token: user.isAdmin === true ? token : "",
     });
   } else {
     res.status(404).json({ message: "Invalid Credentials" });

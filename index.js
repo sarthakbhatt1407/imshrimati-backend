@@ -22,15 +22,16 @@ const userRoute = require("./routes/user");
 const itemRoute = require("./routes/item");
 const orderRoute = require("./routes/order");
 const categoryRoute = require("./routes/category");
+// const auth = require("./middleware/auth");
 
 // Routes Middleware
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
 app.use("/user", userRoute);
-app.use("/product", itemRoute);
 app.use("/order", orderRoute);
+// app.use(auth)
+app.use("/product", itemRoute);
 app.use("/category", categoryRoute);
 
 // Database
