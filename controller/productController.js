@@ -161,7 +161,7 @@ const getProductById = async (req, res) => {
     const product = await Product.findById(id);
     if (product) {
       return res.status(200).json({
-        product,
+        product.toObject({ getters: true })
       });
     } else {
       throw new Error();
