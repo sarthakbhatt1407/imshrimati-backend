@@ -13,7 +13,7 @@ const orderSchema = mongoose.Schema({
   paymentMethod: { type: String, required: true },
   paymentStatus: { type: String, required: true },
   shippingCharges: { type: Number, required: true },
-  gatewayCharges: { type: Number, required: true },
+  gatewayCharges: { type: Number },
   replacementStatus: { type: Boolean },
   replacement: { type: Object },
   tracking: { type: String },
