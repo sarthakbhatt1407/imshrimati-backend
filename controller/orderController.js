@@ -95,7 +95,7 @@ const createNewOrder = async (req, res) => {
   try {
     await createdOrder.save();
   } catch (error) {
-    return res.status(200).json({ message: "Unable to order" });
+    return res.status(200).json({ message: "Unable to order", error });
   }
   return res
     .status(200)
