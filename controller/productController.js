@@ -336,9 +336,27 @@ const productReviewHandler = async (req, res) => {
   return res.status(200).json({ message: message });
 };
 
+const stockVerifier = async (req, res) => {
+  const { productId, quantity } = req.body;
+  let product;
+  try {
+    product = await Product.findById(productId);
+    if (!product) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "Product not Found" });
+  }
+  if (Number(product.stock) >= Number(quantity)) {
+    return res.status(200).json({ add: true, message: "Stock Available" });
+  }
+  return res.status(404).json({ add: false, message: "Stock Not Available" });
+};
+
 exports.createNewProduct = createNewProduct;
 exports.getAllProducts = getAllProducts;
 exports.deleteProductById = deleteProductById;
 exports.editItemByItemId = editItemByItemId;
 exports.getProductById = getProductById;
 exports.productReviewHandler = productReviewHandler;
+exports.stockVerifier = stockVerifier;

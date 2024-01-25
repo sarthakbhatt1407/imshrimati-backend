@@ -17,5 +17,6 @@ router.patch(
   productController.editItemByItemId
 );
 router.patch("/reviews", productController.productReviewHandler);
+router.post("/stock", productController.stockVerifier);
 
 module.exports = router;
