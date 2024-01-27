@@ -12,12 +12,13 @@ const orderSchema = mongoose.Schema({
   year: { type: String, required: true },
   paymentMethod: { type: String, required: true },
   paymentStatus: { type: String, required: true },
+  paymentOrderId: { type: String, required: true },
   shippingCharges: { type: Number, required: true },
-  gatewayCharges: { type: Number },
   replacementStatus: { type: Boolean },
   replacement: { type: Object },
   tracking: { type: String },
   status: { type: String, required: true },
+  orderPrice: { type: Number, required: true },
 });
 
 module.exports = mongoose.model("Order", orderSchema);

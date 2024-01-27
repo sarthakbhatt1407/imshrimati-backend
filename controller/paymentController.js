@@ -5,6 +5,20 @@ const razorpayInstance = new Razorpay({
   key_id: RAZORPAY_ID_KEY,
   key_secret: RAZORPAY_SECRET_KEY,
 });
+
+const paymentVerifier = async (req, res) => {
+  const id = req.body.id;
+  try {
+    const pay = await razorpayInstance.payments.all();
+    const orderPaymentInfo = pay.items.find((item) => {
+      return item.order_id === id;
+    });
+    return res.status(200).json(orderPaymentInfo);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "No payment found", error });
+  }
+};
 const createOrder = async (req, res) => {
   try {
     const amount = req.body.amount * 100;
@@ -21,9 +35,6 @@ const createOrder = async (req, res) => {
           msg: "Order Created",
           order_id: order.id,
           amount: amount,
-          key_id: RAZORPAY_ID_KEY,
-          product_name: "imshrimatiji",
-          description: "online fashion store",
           contact: req.body.userContact,
           name: req.body.userName,
           email: req.body.userEmail,
@@ -33,10 +44,11 @@ const createOrder = async (req, res) => {
       }
     });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 };
 
 module.exports = {
   createOrder,
+  paymentVerifier,
 };

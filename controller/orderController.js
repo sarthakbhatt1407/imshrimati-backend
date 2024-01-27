@@ -67,21 +67,25 @@ const createNewOrder = async (req, res) => {
     price,
     productId,
     paymentMethod,
-    paymentStatus,
     shippingCharges,
-    gatewayCharges,
+    secretKey,
+    paymentOrderId,
+    orderPrice,
   } = req.body;
   const dateAndTime = dateFetcher();
+  if (secretKey !== process.env.ORDER_CREATOR_SECRET_KEY) {
+    return res.status(400).json({ message: "Request not allowed" });
+  }
   const createdOrder = new Order({
     userId,
     address,
     quantity,
     price,
+    orderPrice,
     productId,
     paymentMethod,
-    paymentStatus,
+    paymentStatus: "pending",
     shippingCharges,
-    gatewayCharges,
     time: dateAndTime.time,
     day: dateAndTime.date[2],
     month: dateAndTime.date[1],
@@ -89,9 +93,9 @@ const createNewOrder = async (req, res) => {
     replacementStatus: false,
     replacement: { size: "", color: "", reason: "" },
     tracking: "",
-    status: "Pending",
+    status: "pending",
+    paymentOrderId,
   });
-  //   return res.json(createdOrder);
   try {
     await createdOrder.save();
   } catch (error) {
@@ -100,6 +104,34 @@ const createNewOrder = async (req, res) => {
   return res
     .status(200)
     .json({ message: "Ordered Successfully", createdOrder });
+};
+
+const orderPaymentUpdater = async (req, res) => {
+  const { orderId, orderPaymentStatus } = req.body;
+  let order;
+  try {
+    order = await Order.findById(orderId);
+    if (!order) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "No order found", error });
+  }
+  if (orderPaymentStatus === true) {
+    order.paymentStatus = "completed";
+  }
+  if (orderPaymentStatus === false) {
+    order.paymentStatus = "failed";
+  }
+  try {
+    order.markModified("paymentStatus");
+    await order.save();
+  } catch (error) {
+    return res.status(404).json({ message: "Unable to update", error });
+  }
+  return res
+    .status(404)
+    .json({ message: "order updated", status: order.paymentStatus });
 };
 
 const getOrderByUserId = async (req, res) => {
@@ -112,7 +144,7 @@ const getOrderByUserId = async (req, res) => {
       throw new Error();
     }
   } catch (error) {
-    return res.status(404).json({ message: "No orders found" });
+    return res.status(404).json({ message: "No orders found", error });
   }
   return res.status(200).json({
     orders: orders.map((order) => {
@@ -130,7 +162,7 @@ const editOrderByOrderId = async (req, res) => {
       throw new Error();
     }
   } catch (error) {
-    return res.status(404).json({ message: "No order found" });
+    return res.status(404).json({ message: "No order found", error });
   }
   const obj = {
     size,
@@ -139,11 +171,11 @@ const editOrderByOrderId = async (req, res) => {
   };
   order.replacementStatus = true;
   order.replacement = obj;
-  order.status = "Pending";
+  order.status = "pending";
   try {
     await order.save();
   } catch (error) {
-    return res.status(404).json({ message: "Something went wrong" });
+    return res.status(404).json({ message: "Something went wrong", error });
   }
 
   return res.status(200).json({ message: "Order updated succesfully", order });
@@ -158,7 +190,7 @@ const getAllOrders = async (req, res) => {
       throw new Error();
     }
   } catch (error) {
-    return res.status(404).json({ message: "No orders found" });
+    return res.status(404).json({ message: "No orders found", error });
   }
   return res.status(200).json({
     orders: orders.map((order) => {
@@ -179,7 +211,7 @@ const getTotalMonthlyPayment = async (req, res) => {
         throw new Error();
       }
     } catch (error) {
-      return res.status(404).json({ message: "No orders found" });
+      return res.status(404).json({ message: "No orders found", error });
     }
   }
   if (action === "daily") {
@@ -190,7 +222,7 @@ const getTotalMonthlyPayment = async (req, res) => {
         throw new Error();
       }
     } catch (error) {
-      return res.status(404).json({ message: "No orders found" });
+      return res.status(404).json({ message: "No orders found", error });
     }
   }
   if (action === "yearly") {
@@ -201,7 +233,7 @@ const getTotalMonthlyPayment = async (req, res) => {
         throw new Error();
       }
     } catch (error) {
-      return res.status(404).json({ message: "No orders found" });
+      return res.status(404).json({ message: "No orders found", error });
     }
   }
   return res.status(200).json({
@@ -222,7 +254,7 @@ const trackingUpdater = async (req, res) => {
       throw new Error();
     }
   } catch (error) {
-    return res.status(404).json({ message: "No order found" });
+    return res.status(404).json({ message: "No order found", error });
   }
   if (action === "replace") {
     order.replacementStatus = false;
@@ -232,7 +264,7 @@ const trackingUpdater = async (req, res) => {
   try {
     await order.save();
   } catch (error) {
-    return res.status(404).json({ message: "Something went wrong" });
+    return res.status(404).json({ message: "Something went wrong", error });
   }
   return res.status(201).json({ message: "order updated succesfully", order });
 };
@@ -243,3 +275,4 @@ exports.editOrderByOrderId = editOrderByOrderId;
 exports.getAllOrders = getAllOrders;
 exports.getTotalMonthlyPayment = getTotalMonthlyPayment;
 exports.trackingUpdater = trackingUpdater;
+exports.orderPaymentUpdater = orderPaymentUpdater;
