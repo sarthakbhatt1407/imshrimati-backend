@@ -18,5 +18,6 @@ router.patch(
 );
 router.patch("/reviews", productController.productReviewHandler);
 router.post("/stock", productController.stockVerifier);
+router.post("/category", productController.getProductByCategory);
 
 module.exports = router;

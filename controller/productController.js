@@ -170,6 +170,24 @@ const getProductById = async (req, res) => {
     return res.status(404).json({ message: "Product not Found" });
   }
 };
+const getProductByCategory = async (req, res) => {
+  const category = req.body.category;
+  console.log(category);
+  try {
+    const products = await Product.find({ category: category });
+    if (products) {
+      return res.status(200).json({
+        products: products.map((product) => {
+          return product.toObject({ getters: true });
+        }),
+      });
+    } else {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "Products not Found" });
+  }
+};
 
 const deleteProductById = async (req, res) => {
   const id = req.body.id;
@@ -360,3 +378,4 @@ exports.editItemByItemId = editItemByItemId;
 exports.getProductById = getProductById;
 exports.productReviewHandler = productReviewHandler;
 exports.stockVerifier = stockVerifier;
+exports.getProductByCategory = getProductByCategory;
