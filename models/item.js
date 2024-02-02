@@ -8,7 +8,7 @@ const productSchema = mongoose.Schema({
   fabric: { type: String, required: true },
   size: { type: String, required: true },
   reviews: { type: Array, required: true },
-  stock: { type: String, required: true },
+  stock: { type: Array, required: true },
   images: { type: String },
   discount: { type: String },
   slug: { type: String },

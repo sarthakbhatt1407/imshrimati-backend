@@ -103,7 +103,6 @@ const createNewProduct = async (req, res, next) => {
       price,
       fabric,
       size,
-      stock,
       discount,
       slug,
       metaTitle,
@@ -119,7 +118,7 @@ const createNewProduct = async (req, res, next) => {
       price,
       fabric,
       size,
-      stock,
+      stock: [{ xl: 3 }, { l: 2 }, { m: 1 }],
       discount,
       slug,
       metaTitle,
@@ -355,7 +354,7 @@ const productReviewHandler = async (req, res) => {
 };
 
 const stockVerifier = async (req, res) => {
-  const { productId, quantity } = req.body;
+  const { productId, quantity, size } = req.body;
   let product;
   try {
     product = await Product.findById(productId);
@@ -365,7 +364,15 @@ const stockVerifier = async (req, res) => {
   } catch (error) {
     return res.status(404).json({ message: "Product not Found" });
   }
-  if (Number(product.stock) >= Number(quantity)) {
+
+  const selectedSize = product.stock.find((sz) => {
+    for (const key in sz) {
+      if (key === size) {
+        return sz;
+      }
+    }
+  });
+  if (Number(selectedSize[size]) >= Number(quantity)) {
     return res.status(200).json({ add: true, message: "Stock Available" });
   }
   return res.status(404).json({ add: false, message: "Stock Not Available" });
