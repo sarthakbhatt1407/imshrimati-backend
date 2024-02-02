@@ -172,7 +172,7 @@ const getProductById = async (req, res) => {
 };
 const getProductByCategory = async (req, res) => {
   const category = req.body.category;
-  console.log(category);
+
   try {
     const products = await Product.find({ category: category });
     if (products) {
