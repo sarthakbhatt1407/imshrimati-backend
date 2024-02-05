@@ -72,6 +72,7 @@ const createNewOrder = async (req, res) => {
     paymentOrderId,
     orderPrice,
     image,
+    size,
   } = req.body;
   const dateAndTime = dateFetcher();
   if (secretKey !== process.env.ORDER_CREATOR_SECRET_KEY) {
@@ -97,6 +98,7 @@ const createNewOrder = async (req, res) => {
     status: "pending",
     paymentOrderId,
     image,
+    size,
   });
   try {
     await createdOrder.save();
