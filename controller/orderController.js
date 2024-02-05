@@ -71,6 +71,7 @@ const createNewOrder = async (req, res) => {
     secretKey,
     paymentOrderId,
     orderPrice,
+    image,
   } = req.body;
   const dateAndTime = dateFetcher();
   if (secretKey !== process.env.ORDER_CREATOR_SECRET_KEY) {
