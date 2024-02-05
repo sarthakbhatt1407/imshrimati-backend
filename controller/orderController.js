@@ -96,6 +96,7 @@ const createNewOrder = async (req, res) => {
     tracking: "",
     status: "pending",
     paymentOrderId,
+    image,
   });
   try {
     await createdOrder.save();
