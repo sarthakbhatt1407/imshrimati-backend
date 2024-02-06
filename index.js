@@ -26,7 +26,9 @@ const paymentRoute = require("./routes/payment");
 // const auth = require("./middleware/auth");
 
 // Routes Middleware
+var date = new Date();
 
+const deliveryDate = date.setDate(date.getDate() + 10);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/user", userRoute);

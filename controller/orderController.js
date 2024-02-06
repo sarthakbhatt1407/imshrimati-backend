@@ -73,7 +73,9 @@ const createNewOrder = async (req, res) => {
     orderPrice,
     image,
     size,
+    expectedDelivery,
   } = req.body;
+
   const dateAndTime = dateFetcher();
   if (secretKey !== process.env.ORDER_CREATOR_SECRET_KEY) {
     return res.status(400).json({ message: "Request not allowed" });
@@ -99,6 +101,7 @@ const createNewOrder = async (req, res) => {
     paymentOrderId,
     image,
     size,
+    expectedDelivery,
   });
   try {
     await createdOrder.save();

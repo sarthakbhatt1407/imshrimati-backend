@@ -21,6 +21,7 @@ const orderSchema = mongoose.Schema({
   orderPrice: { type: Number, required: true },
   image: { type: String, required: true },
   size: { type: String, required: true },
+  expectedDelivery: { type: String, required: true },
 });
 
 module.exports = mongoose.model("Order", orderSchema);
