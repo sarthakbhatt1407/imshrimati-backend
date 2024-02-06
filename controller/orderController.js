@@ -150,10 +150,6 @@ const getOrderByUserId = async (req, res) => {
   let orders;
   try {
     orders = await Order.find({ userId: userId });
-
-    if (orders.length == 0) {
-      throw new Error();
-    }
   } catch (error) {
     return res.status(404).json({ message: "No orders found", error });
   }
