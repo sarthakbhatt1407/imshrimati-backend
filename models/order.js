@@ -10,7 +10,7 @@ const orderSchema = mongoose.Schema({
   day: { type: String, required: true },
   month: { type: String, required: true },
   year: { type: String, required: true },
-  paymentMethod: { type: String, required: true },
+  paymentMethod: { type: String },
   paymentStatus: { type: String, required: true },
   paymentOrderId: { type: String, required: true },
   shippingCharges: { type: Number, required: true },

@@ -66,7 +66,6 @@ const createNewOrder = async (req, res) => {
     quantity,
     price,
     productId,
-    paymentMethod,
     shippingCharges,
     secretKey,
     paymentOrderId,
@@ -87,7 +86,6 @@ const createNewOrder = async (req, res) => {
     price,
     orderPrice,
     productId,
-    paymentMethod,
     paymentStatus: "pending",
     shippingCharges,
     time: dateAndTime.time,
@@ -102,7 +100,9 @@ const createNewOrder = async (req, res) => {
     image,
     size,
     expectedDelivery,
+    paymentMethod: "",
   });
+
   try {
     await createdOrder.save();
   } catch (error) {
@@ -114,7 +114,7 @@ const createNewOrder = async (req, res) => {
 };
 
 const orderPaymentUpdater = async (req, res) => {
-  const { orderId, orderPaymentStatus } = req.body;
+  const { orderId, orderPaymentStatus, paymentMethod } = req.body;
   let order;
   try {
     order = await Order.findById(orderId);
@@ -126,12 +126,14 @@ const orderPaymentUpdater = async (req, res) => {
   }
   if (orderPaymentStatus === true) {
     order.paymentStatus = "completed";
+    order.paymentMethod = paymentMethod;
   }
   if (orderPaymentStatus === false) {
     order.paymentStatus = "failed";
   }
   try {
     order.markModified("paymentStatus");
+    order.markModified("paymentMethod");
     await order.save();
   } catch (error) {
     return res.status(404).json({ message: "Unable to update", error });
