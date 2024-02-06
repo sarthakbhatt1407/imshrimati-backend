@@ -73,6 +73,7 @@ const createNewOrder = async (req, res) => {
     image,
     size,
     expectedDelivery,
+    orderTitle,
   } = req.body;
 
   const dateAndTime = dateFetcher();
@@ -86,6 +87,7 @@ const createNewOrder = async (req, res) => {
     price,
     orderPrice,
     productId,
+    orderTitle,
     paymentStatus: "pending",
     shippingCharges,
     time: dateAndTime.time,
