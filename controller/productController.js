@@ -378,39 +378,6 @@ const stockVerifier = async (req, res) => {
   return res.status(404).json({ add: false, message: "Stock Not Available" });
 };
 
-const deliveryChecker = async (req, res) => {
-  const { pinCode } = req.body;
-  try {
-    const reslt = await fetch(
-      `https://track.delhivery.com/c/api/pin-codes/json/?filter_codes=${pinCode}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${process.env.DELHIVERY_API_KEY}`,
-        },
-      }
-    );
-    const data = await reslt.json();
-
-    if (data.delivery_codes.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Delivery not available", available: false });
-    }
-    if (data.delivery_codes.length > 0) {
-      return res.status(400).json({
-        message: "Delivery available",
-        available: true,
-        data: data.delivery_codes[0]["postal_code"],
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({ message: "Something went wrong..", error });
-  }
-};
-
 exports.createNewProduct = createNewProduct;
 exports.getAllProducts = getAllProducts;
 exports.deleteProductById = deleteProductById;
@@ -419,4 +386,3 @@ exports.getProductById = getProductById;
 exports.productReviewHandler = productReviewHandler;
 exports.stockVerifier = stockVerifier;
 exports.getProductByCategory = getProductByCategory;
-exports.deliveryChecker = deliveryChecker;

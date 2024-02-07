@@ -74,6 +74,7 @@ const createNewOrder = async (req, res) => {
     size,
     expectedDelivery,
     orderTitle,
+    shippingOrderId,
   } = req.body;
 
   const dateAndTime = dateFetcher();
@@ -103,6 +104,8 @@ const createNewOrder = async (req, res) => {
     size,
     expectedDelivery,
     paymentMethod: "",
+    deleted: false,
+    shippingOrderId,
   });
 
   try {
@@ -132,9 +135,11 @@ const orderPaymentUpdater = async (req, res) => {
   }
   if (orderPaymentStatus === false) {
     order.paymentStatus = "failed";
+    order.deleted = true;
   }
   try {
     order.markModified("paymentStatus");
+    order.markModified("deleted");
     order.markModified("paymentMethod");
     await order.save();
   } catch (error) {
@@ -146,7 +151,7 @@ const orderPaymentUpdater = async (req, res) => {
 };
 
 const getOrderByUserId = async (req, res) => {
-  const { userId } = req.body;
+  const { userId } = req.params;
   let orders;
   try {
     orders = await Order.find({ userId: userId });

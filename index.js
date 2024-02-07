@@ -23,6 +23,7 @@ const itemRoute = require("./routes/item");
 const orderRoute = require("./routes/order");
 const categoryRoute = require("./routes/category");
 const paymentRoute = require("./routes/payment");
+const shipRocketRoute = require("./routes/shipRocket");
 // const auth = require("./middleware/auth");
 
 // Routes Middleware
@@ -35,6 +36,7 @@ app.use("/order", orderRoute);
 app.use("/product", itemRoute);
 app.use("/category", categoryRoute);
 app.use("/payment", paymentRoute);
+app.use("/shipping", shipRocketRoute);
 
 // Database
 

@@ -7,7 +7,7 @@ const razorpayInstance = new Razorpay({
 });
 
 const paymentVerifier = async (req, res) => {
-  const id = req.body.id;
+  const id = req.params.id;
   try {
     const pay = await razorpayInstance.payments.all({ count: 100 });
     const orderPaymentInfo = pay.items.find((item) => {
@@ -16,10 +16,10 @@ const paymentVerifier = async (req, res) => {
     if (orderPaymentInfo) {
       return res.status(200).json(orderPaymentInfo);
     } else {
-      throw new Error();
+      return res.status(200).json({ captured: false, id });
     }
   } catch (error) {
-    return res.status(400).json({ message: "No payment found", error });
+    // return res.status(400).json({ message: "No payment found", error });
   }
 };
 const createOrder = async (req, res) => {
