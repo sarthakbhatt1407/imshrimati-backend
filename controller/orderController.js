@@ -74,7 +74,8 @@ const createNewOrder = async (req, res) => {
     size,
     expectedDelivery,
     orderTitle,
-    shippingOrderId,
+    category,
+    slug,
   } = req.body;
 
   const dateAndTime = dateFetcher();
@@ -105,7 +106,8 @@ const createNewOrder = async (req, res) => {
     expectedDelivery,
     paymentMethod: "",
     deleted: false,
-    shippingOrderId,
+    category,
+    slug,
   });
 
   try {
@@ -132,6 +134,7 @@ const orderPaymentUpdater = async (req, res) => {
   if (orderPaymentStatus === true) {
     order.paymentStatus = "completed";
     order.paymentMethod = paymentMethod;
+    order.deleted = false;
   }
   if (orderPaymentStatus === false) {
     order.paymentStatus = "failed";
@@ -152,6 +155,7 @@ const orderPaymentUpdater = async (req, res) => {
 
 const getOrderByUserId = async (req, res) => {
   const { userId } = req.params;
+
   let orders;
   try {
     orders = await Order.find({ userId: userId });
@@ -162,6 +166,19 @@ const getOrderByUserId = async (req, res) => {
     orders: orders.map((order) => {
       return order.toObject({ getters: true });
     }),
+  });
+};
+const getOrderByOrderId = async (req, res) => {
+  const { orderId } = req.params;
+
+  let order;
+  try {
+    order = await Order.findById(orderId);
+  } catch (error) {
+    return res.status(404).json({ message: "No order found", error });
+  }
+  return res.status(200).json({
+    order: order.toObject({ getters: true }),
   });
 };
 
@@ -288,3 +305,4 @@ exports.getAllOrders = getAllOrders;
 exports.getTotalMonthlyPayment = getTotalMonthlyPayment;
 exports.trackingUpdater = trackingUpdater;
 exports.orderPaymentUpdater = orderPaymentUpdater;
+exports.getOrderByOrderId = getOrderByOrderId;

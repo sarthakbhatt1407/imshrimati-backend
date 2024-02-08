@@ -23,8 +23,9 @@ const orderSchema = mongoose.Schema({
   image: { type: String, required: true },
   size: { type: String, required: true },
   expectedDelivery: { type: String, required: true },
-  shippingOrderId: { type: String, required: true },
   deleted: { type: Boolean, required: true },
+  category: { type: String, required: true },
+  slug: { type: String, required: true },
 });
 
 module.exports = mongoose.model("Order", orderSchema);
