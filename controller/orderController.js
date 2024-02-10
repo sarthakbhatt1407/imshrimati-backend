@@ -76,6 +76,13 @@ const createNewOrder = async (req, res) => {
     orderTitle,
     category,
     slug,
+    addressLine1,
+    addressLine2,
+    city,
+    addressState,
+    addressCountry,
+    color,
+    cityPincode,
   } = req.body;
 
   const dateAndTime = dateFetcher();
@@ -108,6 +115,13 @@ const createNewOrder = async (req, res) => {
     deleted: false,
     category,
     slug,
+    addressLine1,
+    addressLine2,
+    city,
+    addressState,
+    addressCountry,
+    color,
+    cityPincode,
   });
 
   try {

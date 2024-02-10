@@ -26,6 +26,13 @@ const orderSchema = mongoose.Schema({
   deleted: { type: Boolean, required: true },
   category: { type: String, required: true },
   slug: { type: String, required: true },
+  addressLine1: { type: String, required: true },
+  addressLine2: { type: String, required: true },
+  city: { type: String, required: true },
+  addressState: { type: String, required: true },
+  addressCountry: { type: String, required: true },
+  color: { type: String, required: true },
+  cityPincode: { type: String, required: true },
 });
 
 module.exports = mongoose.model("Order", orderSchema);

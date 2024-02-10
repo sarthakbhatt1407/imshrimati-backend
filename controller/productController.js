@@ -372,7 +372,10 @@ const stockVerifier = async (req, res) => {
       }
     }
   });
-  if (Number(selectedSize[size]) >= Number(quantity)) {
+  if (Number(selectedSize[size]) > Number(quantity)) {
+    return res.status(200).json({ add: true, message: "Stock Available" });
+  }
+  if (Number(selectedSize[size]) === Number(quantity)) {
     return res.status(200).json({ add: true, message: "Stock Available" });
   }
   return res.status(404).json({ add: false, message: "Stock Not Available" });
