@@ -1,7 +1,7 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const { v4: uuidv4 } = require("uuid");
 const months = [
   "January",
   "February",
@@ -95,6 +95,7 @@ const userLogin = async (req, res, next) => {
         email: user.email,
         id: user.id,
         contact: user.contactNum,
+        address: user.address,
       },
       message: "Logged In",
       isloggedIn: true,
@@ -160,8 +161,83 @@ const getAllUsers = async (req, res, next) => {
   res.status(200).json(users);
 };
 
+const addressAdder = async (req, res) => {
+  const {
+    userId,
+    fullName,
+    addressLine1,
+    addressLine2,
+    city,
+    cityPincode,
+    addressState,
+    addressCountry,
+  } = req.body;
+  let user;
+  try {
+    user = await User.findById(userId);
+    if (!user) {
+      throw new Error();
+    }
+  } catch (err) {
+    return res
+      .status(404)
+      .json({ message: "User not found, Please Signup first" });
+  }
+  const address = user.address;
+  const alreadyFound = address.find((add) => {
+    if (
+      add.fullName === fullName &&
+      add.addressLine1 === addressLine1 &&
+      add.addressLine2 === addressLine2 &&
+      add.city === city &&
+      add.cityPincode === cityPincode &&
+      add.addressState === addressState
+    ) {
+      return add;
+    }
+  });
+  if (alreadyFound) {
+    return res.status(404).json({ message: "Address already uploaded!" });
+  }
+  const obj = {
+    addressId: uuidv4(),
+    fullName,
+    addressLine1,
+    addressLine2,
+    city,
+    cityPincode,
+    addressState,
+    addressCountry,
+  };
+  address.push(obj);
+  user.address = address;
+  try {
+    await user.save();
+  } catch (error) {
+    return res.status(404).json({ message: "Something went wrong" });
+  }
+  return res.status(200).json({ message: "Address added" });
+};
+
+const getUserAddressByUserId = async (req, res) => {
+  const userId = req.body.userId;
+  let user;
+  try {
+    user = await User.findById(userId);
+    if (!user) {
+      throw new Error();
+    }
+  } catch (err) {
+    return res
+      .status(404)
+      .json({ message: "User not found, Please Signup first" });
+  }
+  return res.status(200).json({ address: user.address });
+};
 exports.userRegistration = userRegistration;
 exports.userLogin = userLogin;
 exports.emailVerifier = emailVerifier;
 exports.passwordReseter = passwordReseter;
 exports.getAllUsers = getAllUsers;
+exports.addressAdder = addressAdder;
+exports.getUserAddressByUserId = getUserAddressByUserId;
