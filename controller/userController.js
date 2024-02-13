@@ -171,6 +171,7 @@ const addressAdder = async (req, res) => {
     cityPincode,
     addressState,
     addressCountry,
+    contactNum,
   } = req.body;
   let user;
   try {
@@ -208,7 +209,9 @@ const addressAdder = async (req, res) => {
     cityPincode,
     addressState,
     addressCountry,
+    contactNum,
   };
+
   address.push(obj);
   user.address = address;
   try {

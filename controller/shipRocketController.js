@@ -54,7 +54,9 @@ const deliveryChecker = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ message: "Something went wrong..", error });
+    return res
+      .status(400)
+      .json({ message: "Something went wrong..", error, available: false });
   }
 };
 

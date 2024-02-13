@@ -83,6 +83,8 @@ const createNewOrder = async (req, res) => {
     addressCountry,
     color,
     cityPincode,
+    contactNum,
+    fullName,
   } = req.body;
 
   const dateAndTime = dateFetcher();
@@ -122,6 +124,22 @@ const createNewOrder = async (req, res) => {
     addressCountry,
     color,
     cityPincode,
+    contactNum,
+    fullName,
+    fullAddress:
+      fullName +
+      ", " +
+      addressLine1 +
+      ", " +
+      addressLine2 +
+      ", " +
+      city +
+      ", " +
+      cityPincode +
+      ", " +
+      addressState +
+      ", " +
+      addressCountry,
   });
 
   try {

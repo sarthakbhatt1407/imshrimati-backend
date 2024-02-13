@@ -33,6 +33,9 @@ const orderSchema = mongoose.Schema({
   addressCountry: { type: String, required: true },
   color: { type: String, required: true },
   cityPincode: { type: String, required: true },
+  fullAddress: { type: String, required: true },
+  contactNum: { type: String, required: true },
+  fullName: { type: String, required: true },
 });
 
 module.exports = mongoose.model("Order", orderSchema);
