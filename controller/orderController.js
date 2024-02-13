@@ -1,4 +1,5 @@
 const Order = require("../models/order");
+const Product = require("../models/item");
 const { v4: uuidv4 } = require("uuid");
 
 const dateFetcher = () => {
@@ -62,7 +63,6 @@ const dateFetcher = () => {
 const createNewOrder = async (req, res) => {
   const {
     userId,
-    address,
     quantity,
     price,
     productId,
@@ -93,7 +93,6 @@ const createNewOrder = async (req, res) => {
   }
   const createdOrder = new Order({
     userId,
-    address,
     quantity,
     price,
     orderPrice,
@@ -126,20 +125,17 @@ const createNewOrder = async (req, res) => {
     cityPincode,
     contactNum,
     fullName,
-    fullAddress:
-      fullName +
-      ", " +
-      addressLine1 +
-      ", " +
-      addressLine2 +
-      ", " +
-      city +
-      ", " +
-      cityPincode +
-      ", " +
-      addressState +
-      ", " +
-      addressCountry,
+    fullAddress: [
+      {
+        fullName,
+        addressLine1,
+        addressLine2,
+        city,
+        addressState,
+        addressCountry,
+        contactNum,
+      },
+    ],
   });
 
   try {
@@ -153,8 +149,18 @@ const createNewOrder = async (req, res) => {
 };
 
 const orderPaymentUpdater = async (req, res) => {
-  const { orderId, orderPaymentStatus, paymentMethod } = req.body;
+  const { orderId, orderPaymentStatus, paymentMethod, productId, size } =
+    req.body;
   let order;
+  let product;
+  try {
+    product = await Product.findById(productId);
+    if (!product) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "Product not found" });
+  }
   try {
     order = await Order.findById(orderId);
     if (!order) {
@@ -163,10 +169,25 @@ const orderPaymentUpdater = async (req, res) => {
   } catch (error) {
     return res.status(404).json({ message: "No order found", error });
   }
+  const stock = product.stock;
+
   if (orderPaymentStatus === true) {
+    console.log("hi");
     order.paymentStatus = "completed";
     order.paymentMethod = paymentMethod;
     order.deleted = false;
+    const updatedStock = stock.map((obj) => {
+      for (const key in obj) {
+        if (key === size) {
+          if (Number(obj[key]) > 0) {
+            return { [key]: Number(obj[key]) - 1 };
+          }
+        }
+      }
+      return obj;
+    });
+    product.stock = updatedStock;
+    console.log(updatedStock);
   }
   if (orderPaymentStatus === false) {
     order.paymentStatus = "failed";
@@ -174,8 +195,10 @@ const orderPaymentUpdater = async (req, res) => {
   }
   try {
     order.markModified("paymentStatus");
+    product.markModified("stock");
     order.markModified("deleted");
     order.markModified("paymentMethod");
+    await product.save();
     await order.save();
   } catch (error) {
     return res.status(404).json({ message: "Unable to update", error });

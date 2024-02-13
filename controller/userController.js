@@ -96,6 +96,7 @@ const userLogin = async (req, res, next) => {
         id: user.id,
         contact: user.contactNum,
         address: user.address,
+        userSince: user.userSince,
       },
       message: "Logged In",
       isloggedIn: true,

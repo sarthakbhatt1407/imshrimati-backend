@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const orderSchema = mongoose.Schema({
   userId: { type: String, required: true },
   orderTitle: { type: String, required: true },
-  address: { type: String, required: true },
   quantity: { type: Number, required: true },
   price: { type: Number, required: true },
   productId: { type: String, required: true },
@@ -33,7 +32,7 @@ const orderSchema = mongoose.Schema({
   addressCountry: { type: String, required: true },
   color: { type: String, required: true },
   cityPincode: { type: String, required: true },
-  fullAddress: { type: String, required: true },
+  fullAddress: { type: Array, required: true },
   contactNum: { type: String, required: true },
   fullName: { type: String, required: true },
 });
