@@ -8,6 +8,6 @@ router.post("/add-address", userController.addressAdder);
 router.post("/get-address", userController.getUserAddressByUserId);
 router.post("/get-user", userController.getUserDetailsByUserId);
 router.post("/verify-otp", userController.verifyOtp);
-router.post("/send-email", userController.sendEMail);
+router.post("/send-email", userController.sendEmail);
 
 module.exports = router;

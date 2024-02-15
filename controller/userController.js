@@ -2,6 +2,9 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
+
+let emailsOtp = [];
+
 const months = [
   "January",
   "February",
@@ -16,7 +19,6 @@ const months = [
   "November",
   "December",
 ];
-var otp;
 const nodemailer = require("nodemailer");
 const validateEmail = (email) => {
   return String(email)
@@ -32,8 +34,8 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: "sarthakbhattsb1407@gmail.com",
-    pass: "fnwr omul hgxc dnvc",
+    user: process.env.SMSMPT_EMAIL,
+    pass: process.env.SMPT_PASS,
   },
 });
 
@@ -80,9 +82,39 @@ const userRegistration = async (req, res, next) => {
     });
   }
 };
-const sendEMail = async (req, res) => {
+
+const sendEmail = async (req, res) => {
+  const date = new Date();
+
   const { email } = req.body;
-  otp = Math.floor(100000 + Math.random() * 900000);
+  if (!email) {
+    return res.status(400).json({ message: "email is invalid" });
+  }
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  const obj = {
+    email,
+    otp,
+    verfied: false,
+    validity: date.setTime(date.getTime() + 1000 * 60),
+  };
+  const alreadyFound = emailsOtp.find((usr) => {
+    return usr.email === email;
+  });
+  if (alreadyFound) {
+    const updaatedEmailOtp = emailsOtp.map((usr) => {
+      if (alreadyFound.email === usr.email) {
+        usr.otp = otp;
+        usr.validity = date.setTime(date.getTime() + 1000 * 60);
+        return usr;
+      }
+      return usr;
+    });
+    emailsOtp = updaatedEmailOtp;
+  }
+  if (!alreadyFound) {
+    emailsOtp.push(obj);
+  }
+
   // send mail with defined transport object
   const info = await transporter.sendMail({
     from: '"imshrimatiji" work.fusionavinya@gmail.com', // sender address
@@ -93,7 +125,7 @@ const sendEMail = async (req, res) => {
   });
 
   // console.log("Message sent: %s", info);
-  return res.json({ info, message: "send" });
+  return res.json({ otp, info, message: "send" });
 };
 const verifyOtp = async (req, res) => {
   const { otpInp } = req.body;
@@ -305,4 +337,4 @@ exports.addressAdder = addressAdder;
 exports.getUserAddressByUserId = getUserAddressByUserId;
 exports.getUserDetailsByUserId = getUserDetailsByUserId;
 exports.verifyOtp = verifyOtp;
-exports.sendEMail = sendEMail;
+exports.sendEmail = sendEmail;
