@@ -16,7 +16,8 @@ const months = [
   "November",
   "December",
 ];
-
+var otp;
+const nodemailer = require("nodemailer");
 const validateEmail = (email) => {
   return String(email)
     .toLowerCase()
@@ -24,8 +25,33 @@ const validateEmail = (email) => {
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
 };
+
+const transporter = nodemailer.createTransport({
+  service: "Gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "sarthakbhattsb1407@gmail.com",
+    pass: "fnwr omul hgxc dnvc",
+  },
+});
+
 const userRegistration = async (req, res, next) => {
   const { name, email, password, contactNum } = req.body;
+  otp = Math.floor(100000 + Math.random() * 900000);
+  // send mail with defined transport object
+  const info = await transporter.sendMail({
+    from: '"imshrimatiji" work.fusionavinya@gmail.com', // sender address
+    to: "sarthakbhatt1407@gmail.com", // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: "Hello world?", // plain text body
+    html: `<b>your otp is ${otp} </b>`, // html body
+  });
+
+  // console.log("Message sent: %s", info);
+  return res.json(info);
+  //
   const date = new Date();
   let day = date.getDate();
   let month = date.getMonth();
@@ -64,6 +90,13 @@ const userRegistration = async (req, res, next) => {
       message: "Sign up successful..",
     });
   }
+};
+const verifyOtp = async (req, res) => {
+  const { otpInp } = req.body;
+  if (otp !== otpInp) {
+    return res.status(400).json({ message: "Otp is invalid" });
+  }
+  return res.status(200).json({ message: "Otp is valid" });
 };
 
 const userLogin = async (req, res, next) => {
@@ -238,6 +271,27 @@ const getUserAddressByUserId = async (req, res) => {
   }
   return res.status(200).json({ address: user.address });
 };
+
+const getUserDetailsByUserId = async (req, res) => {
+  const { userId } = req.body;
+  let user;
+  try {
+    user = await User.findById(userId);
+    if (!user) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "No user found" });
+  }
+  return res.status(200).json({
+    name: user.name,
+    email: user.email,
+    id: user.id,
+    contact: user.contactNum,
+    address: user.address,
+    userSince: user.userSince,
+  });
+};
 exports.userRegistration = userRegistration;
 exports.userLogin = userLogin;
 exports.emailVerifier = emailVerifier;
@@ -245,3 +299,5 @@ exports.passwordReseter = passwordReseter;
 exports.getAllUsers = getAllUsers;
 exports.addressAdder = addressAdder;
 exports.getUserAddressByUserId = getUserAddressByUserId;
+exports.getUserDetailsByUserId = getUserDetailsByUserId;
+exports.verifyOtp = verifyOtp;
