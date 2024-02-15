@@ -39,18 +39,7 @@ const transporter = nodemailer.createTransport({
 
 const userRegistration = async (req, res, next) => {
   const { name, email, password, contactNum } = req.body;
-  otp = Math.floor(100000 + Math.random() * 900000);
-  // send mail with defined transport object
-  const info = await transporter.sendMail({
-    from: '"imshrimatiji" work.fusionavinya@gmail.com', // sender address
-    to: "sarthakbhatt1407@gmail.com", // list of receivers
-    subject: "Hello ✔", // Subject line
-    text: "Hello world?", // plain text body
-    html: `<b>your otp is ${otp} </b>`, // html body
-  });
 
-  // console.log("Message sent: %s", info);
-  return res.json(info);
   //
   const date = new Date();
   let day = date.getDate();
@@ -90,6 +79,21 @@ const userRegistration = async (req, res, next) => {
       message: "Sign up successful..",
     });
   }
+};
+const sendEMail = async (req, res) => {
+  const { email } = req.body;
+  otp = Math.floor(100000 + Math.random() * 900000);
+  // send mail with defined transport object
+  const info = await transporter.sendMail({
+    from: '"imshrimatiji" work.fusionavinya@gmail.com', // sender address
+    to: `${email}`, // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: "Hello world?", // plain text body
+    html: `<b>your otp is ${otp} </b>`, // html body
+  });
+
+  // console.log("Message sent: %s", info);
+  return res.json({ info, message: "send" });
 };
 const verifyOtp = async (req, res) => {
   const { otpInp } = req.body;
@@ -301,3 +305,4 @@ exports.addressAdder = addressAdder;
 exports.getUserAddressByUserId = getUserAddressByUserId;
 exports.getUserDetailsByUserId = getUserDetailsByUserId;
 exports.verifyOtp = verifyOtp;
+exports.sendEMail = sendEMail;
