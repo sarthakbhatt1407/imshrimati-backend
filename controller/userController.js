@@ -34,7 +34,7 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: process.env.SMSMPT_EMAIL,
+    user: process.env.SMPT_EMAIL,
     pass: process.env.SMPT_PASS,
   },
 });
@@ -83,7 +83,7 @@ const userRegistration = async (req, res, next) => {
   }
 };
 
-const sendEmail = async (req, res) => {
+const sendEmailForOtp = async (req, res) => {
   const date = new Date();
 
   const { email } = req.body;
@@ -94,45 +94,70 @@ const sendEmail = async (req, res) => {
   const obj = {
     email,
     otp,
-    verfied: false,
+    verified: false,
     validity: date.setTime(date.getTime() + 1000 * 60),
   };
   const alreadyFound = emailsOtp.find((usr) => {
     return usr.email === email;
   });
-  if (alreadyFound) {
-    const updaatedEmailOtp = emailsOtp.map((usr) => {
-      if (alreadyFound.email === usr.email) {
-        usr.otp = otp;
-        usr.validity = date.setTime(date.getTime() + 1000 * 60);
-        return usr;
-      }
-      return usr;
-    });
-    emailsOtp = updaatedEmailOtp;
+  if (alreadyFound && alreadyFound.verified === true) {
+    return res.json({ message: "Email already verfied" });
   }
+  const alreadyFoundIndex = emailsOtp.findIndex((usr) => {
+    return usr.email === email;
+  });
+  if (alreadyFound) {
+    emailsOtp[alreadyFoundIndex] = obj;
+  }
+
   if (!alreadyFound) {
     emailsOtp.push(obj);
   }
 
   // send mail with defined transport object
-  const info = await transporter.sendMail({
-    from: '"imshrimatiji" work.fusionavinya@gmail.com', // sender address
-    to: `${email}`, // list of receivers
-    subject: "Hello ✔", // Subject line
-    text: "Hello world?", // plain text body
-    html: `<b>your otp is ${otp} </b>`, // html body
-  });
+  let info;
+  try {
+    info = await transporter.sendMail({
+      from: '"imshrimatiji" work.fusionavinya@gmail.com', // sender address
+      to: `${email}`, // list of receivers
+      subject: "Verification", // Subject line
+      text: "Hello world?", // plain text body
+      html: `<b>your otp is ${otp} </b>`, // html body
+    });
+  } catch (error) {
+    return res.json({ info, message: "Unable to send", sent: false });
+  }
 
   // console.log("Message sent: %s", info);
-  return res.json({ otp, info, message: "send" });
+  return res.json({ info, message: "Otp sent to email", sent: true });
 };
 const verifyOtp = async (req, res) => {
-  const { otpInp } = req.body;
-  if (otp !== otpInp) {
-    return res.status(400).json({ message: "Otp is invalid" });
+  const { otpInp, email } = req.body;
+  const date = new Date();
+  const time = date.getTime();
+  const alreadyFound = emailsOtp.find((usr) => {
+    return usr.email === email;
+  });
+  if (alreadyFound) {
+    const alreadyFoundIndex = emailsOtp.findIndex((usr) => {
+      return usr.email === email;
+    });
+    if (alreadyFound.otp === otpInp && time <= alreadyFound.validity) {
+      const obj = {
+        ...alreadyFound,
+        verified: true,
+      };
+      emailsOtp[alreadyFoundIndex] = obj;
+      return res.status(400).json({ message: "Otp is Valid", valid: true });
+    } else {
+      return res
+        .status(200)
+        .json({ message: "Otp is invalid or expired", valid: false });
+    }
   }
-  return res.status(200).json({ message: "Otp is valid" });
+  if (!alreadyFound) {
+    return res.status(200).json({ message: "Email not found" });
+  }
 };
 
 const userLogin = async (req, res, next) => {
@@ -337,4 +362,4 @@ exports.addressAdder = addressAdder;
 exports.getUserAddressByUserId = getUserAddressByUserId;
 exports.getUserDetailsByUserId = getUserDetailsByUserId;
 exports.verifyOtp = verifyOtp;
-exports.sendEmail = sendEmail;
+exports.sendEmailForOtp = sendEmailForOtp;

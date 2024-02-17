@@ -143,9 +143,10 @@ const createNewOrder = async (req, res) => {
   } catch (error) {
     return res.status(200).json({ message: "Unable to order", error });
   }
-  return res
-    .status(200)
-    .json({ message: "Ordered Successfully", createdOrder });
+  return res.status(200).json({
+    message: "Ordered Successfully",
+    createdOrder: createdOrder.toObject({ getters: true }),
+  });
 };
 
 const orderPaymentUpdater = async (req, res) => {
@@ -170,9 +171,19 @@ const orderPaymentUpdater = async (req, res) => {
     return res.status(404).json({ message: "No order found", error });
   }
   const stock = product.stock;
+  if (
+    paymentMethod === "Waiting for confirmation." &&
+    orderPaymentStatus === true
+  ) {
+    order.paymentStatus = "Waiting for confirmation.";
+    order.paymentMethod = paymentMethod;
+    order.deleted = false;
+  }
 
-  if (orderPaymentStatus === true) {
-    console.log("hi");
+  if (
+    orderPaymentStatus === true &&
+    !(paymentMethod === "Waiting for confirmation.")
+  ) {
     order.paymentStatus = "completed";
     order.paymentMethod = paymentMethod;
     order.deleted = false;
