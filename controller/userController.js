@@ -174,9 +174,45 @@ const verifyOtp = async (req, res) => {
 };
 
 const userLogin = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, contactNum } = req.body;
   let user;
   let passIsValid = false;
+  if (contactNum && contactNum.length === 10) {
+    try {
+      user = await User.findOne({ contactNum: contactNum });
+      if (!user) {
+        throw new Error();
+      }
+    } catch (err) {
+      return res.status(404).json({
+        message: "Mobile number not found, Please Signup first",
+        success: false,
+      });
+    }
+    passIsValid = await bcrypt.compare(password, user.password);
+    if (passIsValid) {
+      token = jwt.sign({ userId: user.id, userEmail: email }, "secret_key");
+      user.password = "Keep Guessing";
+      return res.status(201).json({
+        user: {
+          name: user.name,
+          email: user.email,
+          id: user.id,
+          contact: user.contactNum,
+          address: user.address,
+          userSince: user.userSince,
+        },
+        message: "Logged In",
+        isloggedIn: true,
+        token: user.isAdmin === true ? token : "",
+        success: true,
+      });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "Invalid Credentials", success: false });
+    }
+  }
   if (!validateEmail(email)) {
     return res.status(404).json({ message: "Invalid Email" });
   }
@@ -212,7 +248,9 @@ const userLogin = async (req, res, next) => {
       success: true,
     });
   } else {
-    res.status(404).json({ message: "Invalid Credentials", success: false });
+    return res
+      .status(404)
+      .json({ message: "Invalid Credentials", success: false });
   }
 };
 
