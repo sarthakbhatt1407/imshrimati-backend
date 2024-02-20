@@ -75,10 +75,13 @@ const userRegistration = async (req, res, next) => {
       await createdUser.save();
     } catch (err) {
       console.log(err);
-      return res.status(403).json({ message: "Unable to register user." });
+      return res
+        .status(403)
+        .json({ message: "Unable to register user.", success: false });
     }
-    res.status(201).json({
+    res.status(200).json({
       message: "Sign up successful..",
+      success: true,
     });
   }
 };
@@ -87,6 +90,16 @@ const sendEmailForOtp = async (req, res) => {
   const date = new Date();
 
   const { email } = req.body;
+  let user;
+  try {
+    user = await User.findOne({ email: email });
+
+    if (user) {
+      return res.status(400).json({ message: "Email already exists." });
+    }
+  } catch (error) {
+    return res.json({ info, message: "Something went wrong" });
+  }
   if (!email) {
     return res.status(400).json({ message: "email is invalid" });
   }
@@ -100,7 +113,7 @@ const sendEmailForOtp = async (req, res) => {
   const alreadyFound = emailsOtp.find((usr) => {
     return usr.email === email;
   });
-  if (alreadyFound && alreadyFound.verified === true) {
+  if (alreadyFound && alreadyFound.verified === true && user) {
     return res.json({ message: "Email already verfied" });
   }
   const alreadyFoundIndex = emailsOtp.findIndex((usr) => {
@@ -173,9 +186,10 @@ const userLogin = async (req, res, next) => {
       throw new Error();
     }
   } catch (err) {
-    return res
-      .status(404)
-      .json({ message: "Email not found, Please Signup first" });
+    return res.status(404).json({
+      message: "Email not found, Please Signup first",
+      success: false,
+    });
   }
 
   passIsValid = await bcrypt.compare(password, user.password);
@@ -195,9 +209,10 @@ const userLogin = async (req, res, next) => {
       message: "Logged In",
       isloggedIn: true,
       token: user.isAdmin === true ? token : "",
+      success: true,
     });
   } else {
-    res.status(404).json({ message: "Invalid Credentials" });
+    res.status(404).json({ message: "Invalid Credentials", success: false });
   }
 };
 
