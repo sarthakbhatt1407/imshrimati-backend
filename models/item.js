@@ -9,7 +9,7 @@ const productSchema = mongoose.Schema({
   size: { type: String, required: true },
   reviews: { type: Array, required: true },
   stock: { type: Array, required: true },
-  images: { type: String },
+  images: { type: String, required: true },
   discount: { type: String },
   slug: { type: String },
   metaTitle: { type: String },
