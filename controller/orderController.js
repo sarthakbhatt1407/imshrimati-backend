@@ -1,22 +1,22 @@
 const Order = require("../models/order");
 const Product = require("../models/item");
 const { v4: uuidv4 } = require("uuid");
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const dateFetcher = () => {
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
   const currentTime = new Date();
 
   const currentOffset = currentTime.getTimezoneOffset();
@@ -296,48 +296,51 @@ const getAllOrders = async (req, res) => {
 
 const getTotalMonthlyPayment = async (req, res) => {
   const { month, action, day, year } = req.body;
-  let totalSales = 0;
-  let orders;
-  if (action === "monthly") {
-    try {
-      orders = await Order.find({ month: month });
 
-      if (orders.length == 0) {
-        throw new Error();
+  const allObj = {};
+  if (action === "allDays") {
+    for (let i = 31; i > 0; i--) {
+      if (i < 10) {
+        i = "0" + i;
       }
-    } catch (error) {
-      return res.status(404).json({ message: "No orders found", error });
+      allObj[i] = 0;
     }
-  }
-  if (action === "daily") {
-    try {
-      orders = await Order.find({ day: day });
 
-      if (orders.length == 0) {
-        throw new Error();
-      }
-    } catch (error) {
-      return res.status(404).json({ message: "No orders found", error });
-    }
-  }
-  if (action === "yearly") {
     try {
-      orders = await Order.find({ year: year });
-
-      if (orders.length == 0) {
-        throw new Error();
+      const obj = await Order.find({
+        paymentStatus: "completed",
+        month: month,
+      });
+      if (obj.length > 0) {
+        for (const ord of obj) {
+          let tmp = allObj[ord.day];
+          allObj[ord.day] = Number(tmp) + Number(ord.orderPrice);
+        }
       }
-    } catch (error) {
-      return res.status(404).json({ message: "No orders found", error });
-    }
+    } catch (error) {}
+
+    return res.json(allObj);
   }
-  return res.status(200).json({
-    orders: orders.map((order) => {
-      totalSales += order.price * order.quantity;
-      return order.toObject({ getters: true });
-    }),
-    totalSales,
-  });
+  if (action === "allMonths") {
+    for (let i = 0; i < months.length; i++) {
+      allObj[months[i]] = 0;
+    }
+    try {
+      const obj = await Order.find({
+        paymentStatus: "completed",
+        year: year,
+      });
+
+      if (obj.length > 0) {
+        for (const ord of obj) {
+          let tmp = allObj[ord.month];
+
+          allObj[ord.month] = Number(tmp) + Number(ord.orderPrice);
+        }
+      }
+    } catch (error) {}
+    return res.json(allObj);
+  }
 };
 
 const trackingUpdater = async (req, res) => {
@@ -364,6 +367,29 @@ const trackingUpdater = async (req, res) => {
   return res.status(201).json({ message: "order updated succesfully", order });
 };
 
+const orderCounter = async (req, res) => {
+  const { day, month, year } = req.body;
+  let todayOrders, thisMonthOrders, thisYearOrders, totalOrders;
+  try {
+    todayOrders = await Order.find({ paymentStatus: "completed", day });
+    thisMonthOrders = await Order.find({ paymentStatus: "completed", month });
+    thisYearOrders = await Order.find({ paymentStatus: "completed", year });
+    totalOrders = await Order.find({ paymentStatus: "completed" });
+
+    if (!todayOrders && !thisMonthOrders && !thisYearOrders) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "Something went wrong" });
+  }
+  return res.status(200).json({
+    todayOrders: todayOrders,
+    thisMonthOrders: thisMonthOrders,
+    thisYearOrders: thisYearOrders,
+    totalOrders: totalOrders,
+  });
+};
+
 exports.createNewOrder = createNewOrder;
 exports.getOrderByUserId = getOrderByUserId;
 exports.editOrderByOrderId = editOrderByOrderId;
@@ -372,3 +398,4 @@ exports.getTotalMonthlyPayment = getTotalMonthlyPayment;
 exports.trackingUpdater = trackingUpdater;
 exports.orderPaymentUpdater = orderPaymentUpdater;
 exports.getOrderByOrderId = getOrderByOrderId;
+exports.orderCounter = orderCounter;
