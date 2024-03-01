@@ -310,6 +310,7 @@ const getTotalMonthlyPayment = async (req, res) => {
       const obj = await Order.find({
         paymentStatus: "completed",
         month: month,
+        year,
       });
       if (obj.length > 0) {
         for (const ord of obj) {
@@ -358,7 +359,7 @@ const trackingUpdater = async (req, res) => {
     order.replacementStatus = false;
   }
   order.tracking = tracking;
-  order.status = "Completed";
+  order.status = "shipped";
   try {
     await order.save();
   } catch (error) {
@@ -371,8 +372,17 @@ const orderCounter = async (req, res) => {
   const { day, month, year } = req.body;
   let todayOrders, thisMonthOrders, thisYearOrders, totalOrders;
   try {
-    todayOrders = await Order.find({ paymentStatus: "completed", day });
-    thisMonthOrders = await Order.find({ paymentStatus: "completed", month });
+    todayOrders = await Order.find({
+      paymentStatus: "completed",
+      day,
+      year,
+      month,
+    });
+    thisMonthOrders = await Order.find({
+      paymentStatus: "completed",
+      month,
+      year,
+    });
     thisYearOrders = await Order.find({ paymentStatus: "completed", year });
     totalOrders = await Order.find({ paymentStatus: "completed" });
 
