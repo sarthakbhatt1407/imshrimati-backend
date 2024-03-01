@@ -26,7 +26,7 @@ const orderSchema = mongoose.Schema({
   category: { type: String, required: true },
   slug: { type: String, required: true },
   addressLine1: { type: String, required: true },
-  addressLine2: { type: String, required: true },
+  addressLine2: { type: String },
   city: { type: String, required: true },
   addressState: { type: String, required: true },
   addressCountry: { type: String, required: true },
