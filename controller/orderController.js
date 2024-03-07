@@ -1,4 +1,5 @@
 const Order = require("../models/order");
+const User = require("../models/user");
 const Product = require("../models/item");
 const { v4: uuidv4 } = require("uuid");
 const months = [
@@ -175,7 +176,7 @@ const orderPaymentUpdater = async (req, res) => {
     paymentMethod === "Waiting for confirmation." &&
     orderPaymentStatus === true
   ) {
-    order.paymentStatus = "Waiting for confirmation.";
+    order.paymentStatus = "pending";
     order.paymentMethod = paymentMethod;
     order.deleted = false;
   }
@@ -187,6 +188,7 @@ const orderPaymentUpdater = async (req, res) => {
     order.paymentStatus = "completed";
     order.paymentMethod = paymentMethod;
     order.deleted = false;
+    console.log("hi", orderPaymentStatus, paymentMethod);
     const updatedStock = stock.map((obj) => {
       for (const key in obj) {
         if (key === size) {
@@ -198,7 +200,6 @@ const orderPaymentUpdater = async (req, res) => {
       return obj;
     });
     product.stock = updatedStock;
-    console.log(updatedStock);
   }
   if (orderPaymentStatus === false) {
     order.paymentStatus = "failed";
@@ -358,8 +359,15 @@ const trackingUpdater = async (req, res) => {
   if (action === "replace") {
     order.replacementStatus = false;
   }
-  order.tracking = tracking;
-  order.status = "shipped";
+  if (action === "remove") {
+    order.tracking = "";
+    order.status = "pending";
+  }
+  if (action === "add") {
+    order.tracking = tracking;
+    order.status = "shipped";
+  }
+
   try {
     await order.save();
   } catch (error) {
@@ -388,6 +396,10 @@ const orderCounter = async (req, res) => {
 
     if (!todayOrders && !thisMonthOrders && !thisYearOrders) {
       throw new Error();
+    } else {
+      todayOrders.reverse();
+      thisMonthOrders.reverse();
+      thisYearOrders.reverse();
     }
   } catch (error) {
     return res.status(404).json({ message: "Something went wrong" });
@@ -400,6 +412,54 @@ const orderCounter = async (req, res) => {
   });
 };
 
+const getAllOrdersByUser = async (req, res) => {
+  let finalArr = [];
+  let users, pendingOrders, shippedOrders;
+  try {
+    users = await User.find({});
+    if (users.length === 0) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "No users found" });
+  }
+  for (const user of users) {
+    const id = user._id;
+
+    pendingOrders = [];
+    shippedOrders = [];
+    try {
+      pendingOrders = await Order.find({
+        userId: id,
+        paymentStatus: "completed",
+        status: "pending",
+      });
+      shippedOrders = await Order.find({
+        userId: id,
+        paymentStatus: "completed",
+        status: "shipped",
+      });
+      if (shippedOrders.length > 0) {
+        shippedOrders.reverse();
+      }
+      if (pendingOrders.length > 0) {
+        pendingOrders.reverse();
+      }
+
+      const obj = {
+        userName: user.name,
+        userEmail: user.email,
+        userId: user._id,
+        shippedOrders: shippedOrders,
+        pendingOrders: pendingOrders,
+      };
+      finalArr.push(obj);
+    } catch (error) {
+      return res.status(404).json({ message: "Something went wrong" });
+    }
+  }
+  return res.status(200).json(finalArr);
+};
 exports.createNewOrder = createNewOrder;
 exports.getOrderByUserId = getOrderByUserId;
 exports.editOrderByOrderId = editOrderByOrderId;
@@ -409,3 +469,4 @@ exports.trackingUpdater = trackingUpdater;
 exports.orderPaymentUpdater = orderPaymentUpdater;
 exports.getOrderByOrderId = getOrderByOrderId;
 exports.orderCounter = orderCounter;
+exports.getAllOrdersByUser = getAllOrdersByUser;

@@ -91,39 +91,37 @@ const createNewProduct = async (req, res, next) => {
 
   const files = req.files;
   let imgPath = "";
-
+  let createdProduct;
   for (file of files) {
     imgPath += file.path + " ";
   }
-  try {
-    const {
-      title,
-      desc,
-      category,
-      price,
-      fabric,
-      size,
-      discount,
-      slug,
-      metaTitle,
-      metaDesc,
-      metaKeywords,
-      color,
-    } = req.body;
+  const {
+    title,
+    desc,
+    category,
+    price,
+    fabric,
+    discount,
+    slug,
+    metaTitle,
+    metaDesc,
+    metaKeywords,
+    color,
+    stock,
+  } = req.body;
 
-    const createdProduct = new Product({
+  try {
+    createdProduct = new Product({
       title,
       desc,
       category,
       price,
       fabric,
-      size,
-      stock: [{ xl: 3 }, { l: 2 }, { m: 1 }],
+      stock: JSON.parse(stock),
       discount,
       slug,
       metaTitle,
       metaDesc,
-      metaKeywords,
       date: fullDate,
       time: time,
       status: true,
@@ -137,7 +135,22 @@ const createNewProduct = async (req, res, next) => {
     }
     return res.status(400).json({ message: "Unable to add product", err: err });
   }
-  return res.status(201).json({ message: "Product added successfully" });
+  return res
+    .status(201)
+    .json({ message: "Product added successfully", createdProduct });
+};
+
+const uploadImages = async (req, res) => {
+  console.log("start");
+  const files = req.files;
+  console.log(req.body, files);
+  let imgPath = "";
+
+  for (file of files) {
+    imgPath += file.path + " ";
+  }
+  console.log(imgPath);
+  return res.status(200).json({ imgPath });
 };
 const getAllProducts = async (req, res) => {
   try {
@@ -389,3 +402,4 @@ exports.getProductById = getProductById;
 exports.productReviewHandler = productReviewHandler;
 exports.stockVerifier = stockVerifier;
 exports.getProductByCategory = getProductByCategory;
+exports.uploadImages = uploadImages;
