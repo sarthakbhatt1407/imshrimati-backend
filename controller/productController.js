@@ -235,6 +235,7 @@ const editItemByItemId = async (req, res) => {
     metaKeywords,
     id,
   } = req.body;
+
   let imgPath = "";
   for (file of files) {
     imgPath += file.path + " ";
@@ -258,7 +259,7 @@ const editItemByItemId = async (req, res) => {
     product.price = price;
     product.fabric = fabric;
     product.size = size;
-    product.stock = stock;
+    product.stock = JSON.parse(stock);
     product.discount = discount;
     product.slug = slug;
     product.metaTitle = metaTitle;
@@ -394,6 +395,31 @@ const stockVerifier = async (req, res) => {
   return res.status(404).json({ add: false, message: "Stock Not Available" });
 };
 
+const productDeleterOrRestore = async (req, res) => {
+  const { id, action } = req.body;
+  let product;
+  try {
+    product = await Product.findById(id);
+    if (!product) {
+      throw new Error();
+    }
+  } catch (error) {
+    return res.status(404).json({ message: "No product found." });
+  }
+  if (action === "delete") {
+    product.status = false;
+  }
+  if (action === "restore") {
+    product.status = true;
+  }
+  try {
+    await product.save();
+  } catch (error) {
+    return res.status(400).json({ message: "Something went wrong." });
+  }
+  return res.status(200).json({ message: "Product updated", product });
+};
+
 exports.createNewProduct = createNewProduct;
 exports.getAllProducts = getAllProducts;
 exports.deleteProductById = deleteProductById;
@@ -403,3 +429,4 @@ exports.productReviewHandler = productReviewHandler;
 exports.stockVerifier = stockVerifier;
 exports.getProductByCategory = getProductByCategory;
 exports.uploadImages = uploadImages;
+exports.productDeleterOrRestore = productDeleterOrRestore;

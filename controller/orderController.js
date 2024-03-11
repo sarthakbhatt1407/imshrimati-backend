@@ -163,6 +163,7 @@ const orderPaymentUpdater = async (req, res) => {
   } catch (error) {
     return res.status(404).json({ message: "Product not found" });
   }
+
   try {
     order = await Order.findById(orderId);
     if (!order) {
