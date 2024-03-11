@@ -24,7 +24,7 @@ const orderRoute = require("./routes/order");
 const categoryRoute = require("./routes/category");
 const paymentRoute = require("./routes/payment");
 const shipRocketRoute = require("./routes/shipRocket");
-// const auth = require("./middleware/auth");
+const auth = require("./middleware/auth");
 
 // Routes Middleware
 
@@ -32,11 +32,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/user", userRoute);
 app.use("/order", orderRoute);
-// app.use(auth)
+app.use("/shipping", shipRocketRoute);
+app.use("/payment", paymentRoute);
+// app.use(auth);
 app.use("/product", itemRoute);
 app.use("/category", categoryRoute);
-app.use("/payment", paymentRoute);
-app.use("/shipping", shipRocketRoute);
 
 // Database
 

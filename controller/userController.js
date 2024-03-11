@@ -40,14 +40,14 @@ const transporter = nodemailer.createTransport({
 });
 
 const userRegistration = async (req, res, next) => {
-  const { name, email, password, contactNum } = req.body;
+  const { name, email, password, contactNum, isAdmin } = req.body;
 
   //
   const date = new Date();
   let day = date.getDate();
   let month = date.getMonth();
   let year = date.getFullYear();
-  if (password.length < 8) {
+  if (password.length < 6) {
     return res.status(400).json({ message: "Password length is too short.." });
   }
   if (contactNum.length < 10) {
@@ -67,6 +67,7 @@ const userRegistration = async (req, res, next) => {
       address: [],
       wishlist: [],
       status: true,
+      isAdmin: isAdmin ? true : false,
     });
     if (!validateEmail(email)) {
       return res.status(404).json({ message: "Invalid Email" });
@@ -406,6 +407,57 @@ const getUserDetailsByUserId = async (req, res) => {
     userSince: user.userSince,
   });
 };
+const adminLogin = async (req, res, next) => {
+  const { email, password } = req.body;
+  let user;
+  let passIsValid = false;
+
+  if (!validateEmail(email)) {
+    return res.status(404).json({ message: "Invalid Email" });
+  }
+  try {
+    user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error();
+    }
+  } catch (err) {
+    return res.status(404).json({
+      message: "Email not found, Please Signup first",
+      success: false,
+    });
+  }
+  if (!user.isAdmin) {
+    return res
+      .status(404)
+      .json({ message: "User is not admin", success: false });
+  }
+  passIsValid = await bcrypt.compare(password, user.password);
+
+  if (user && email === user.email && passIsValid) {
+    token = jwt.sign({ userId: user.id, userEmail: email }, "secret_key");
+
+    user.password = "Keep Guessing";
+    return res.status(201).json({
+      user: {
+        name: user.name,
+        email: user.email,
+        id: user.id,
+        contact: user.contactNum,
+        address: user.address,
+        userSince: user.userSince,
+      },
+      message: "Logged In",
+      isloggedIn: true,
+      token: user.isAdmin === true ? token : "",
+      success: true,
+    });
+  } else {
+    return res
+      .status(404)
+      .json({ message: "Invalid Credentials", success: false });
+  }
+};
+
 exports.userRegistration = userRegistration;
 exports.userLogin = userLogin;
 exports.emailVerifier = emailVerifier;
@@ -416,3 +468,4 @@ exports.getUserAddressByUserId = getUserAddressByUserId;
 exports.getUserDetailsByUserId = getUserDetailsByUserId;
 exports.verifyOtp = verifyOtp;
 exports.sendEmailForOtp = sendEmailForOtp;
+exports.adminLogin = adminLogin;
