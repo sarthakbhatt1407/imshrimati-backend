@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 
 let emailsOtp = [];
+let forgotPassOtp = [];
 
 const months = [
   "January",
@@ -458,6 +459,90 @@ const adminLogin = async (req, res, next) => {
   }
 };
 
+const forgotPassOtpSender = async (req, res) => {
+  const date = new Date();
+
+  const { email } = req.body;
+  let user;
+  try {
+    user = await User.findOne({ email: email });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Email not found. Please sign up first" });
+    }
+  } catch (error) {
+    return res.json({ info, message: "Something went wrong" });
+  }
+  if (!validateEmail(email)) {
+    return res.status(400).json({ message: "email is invalid" });
+  }
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  const obj = {
+    email,
+    otp,
+    verified: false,
+    validity: date.setTime(date.getTime() + 1000 * 60),
+  };
+  const alreadyFound = forgotPassOtp.find((usr) => {
+    return usr.email === email;
+  });
+
+  const alreadyFoundIndex = forgotPassOtp.findIndex((usr) => {
+    return usr.email === email;
+  });
+  if (alreadyFound) {
+    forgotPassOtp[alreadyFoundIndex] = obj;
+  }
+
+  if (!alreadyFound) {
+    forgotPassOtp.push(obj);
+  }
+
+  // send mail with defined transport object
+  let info;
+  try {
+    info = await transporter.sendMail({
+      from: '"imshrimatiji" work.fusionavinya@gmail.com', // sender address
+      to: `${email}`, // list of receivers
+      subject: "Password reset", // Subject line
+      text: "Hello world?", // plain text body
+      html: `<b>your otp for resetting password is ${otp}. Otp is valid for only 15 minutes.</b>`, // html body
+    });
+  } catch (error) {
+    return res.json({ info, message: "Unable to send", sent: false });
+  }
+
+  // console.log("Message sent: %s", info);
+  return res.json({ info, message: "Otp sent to email", sent: true });
+};
+
+const verifyForgotPassOtp = async (req, res) => {
+  const { otpInp, email } = req.body;
+  const date = new Date();
+  const time = date.getTime();
+  const alreadyFound = forgotPassOtp.find((usr) => {
+    return usr.email === email;
+  });
+  if (alreadyFound) {
+    if (alreadyFound.otp === otpInp && time <= alreadyFound.validity) {
+      const arr = forgotPassOtp.filter((item) => {
+        return item.email != email;
+      });
+      forgotPassOtp = arr;
+      return res.status(400).json({ message: "Otp is Valid", valid: true });
+    } else {
+      return res
+        .status(200)
+        .json({ message: "Otp is invalid or expired", valid: false });
+    }
+  }
+  if (!alreadyFound) {
+    return res.status(200).json({ message: "Email not found. Please Retry." });
+  }
+};
+
 exports.userRegistration = userRegistration;
 exports.userLogin = userLogin;
 exports.emailVerifier = emailVerifier;
@@ -468,4 +553,6 @@ exports.getUserAddressByUserId = getUserAddressByUserId;
 exports.getUserDetailsByUserId = getUserDetailsByUserId;
 exports.verifyOtp = verifyOtp;
 exports.sendEmailForOtp = sendEmailForOtp;
+exports.forgotPassOtpSender = forgotPassOtpSender;
+exports.verifyForgotPassOtp = verifyForgotPassOtp;
 exports.adminLogin = adminLogin;
